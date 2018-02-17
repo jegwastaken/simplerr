@@ -1,59 +1,59 @@
-const e = exports.e = {
+var e = exports.e = {
     badRequest: {
         status: 400,
         code: 'bad_request',
-        message: 'Bad Request',
+        message: 'Bad Request'
     },
     unauthorized: {
         status: 401,
         code: 'unauthorized',
-        message: 'Unauthorized',
+        message: 'Unauthorized'
     },
     forbidden: {
         status: 403,
         code: 'forbidden',
-        message: 'Forbidden',
+        message: 'Forbidden'
     },
     notFound: {
         status: 404,
         code: 'not_found',
-        message: 'Not Found',
+        message: 'Not Found'
     },
     methodNotAllowed: {
         status: 405,
         code: 'method_not_allowed',
-        message: 'Method Not Allowed',
+        message: 'Method Not Allowed'
     },
     conflict: {
         status: 409,
         code: 'conflict',
-        message: 'Conflict',
+        message: 'Conflict'
     },
     internalServer: {
         status: 500,
         code: 'internal_server_error',
-        message: 'Internal Server Error',
+        message: 'Internal Server Error'
     },
     notImplemented: {
         status: 501,
         code: 'not_implemented',
-        message: 'Not Implemented',
-    },
-}
-
-const tweaks = exports.tweaks = {
-    CastError: e.badRequest,
-    AuthenticationError: e.unauthorized,
-    MongoError: e.internalServer,
+        message: 'Not Implemented'
+    }
 };
 
-const defaultError = e.internalServer;
+var tweaks = exports.tweaks = {
+    CastError: e.badRequest,
+    AuthenticationError: e.unauthorized,
+    MongoError: e.internalServer
+};
 
-exports.handler = (err, req, res, next) => {
-    const realErr = JSON.parse(JSON.stringify(err));
+var defaultError = e.internalServer;
 
-    Object.keys(tweaks).map((key) => {
-        let tweak = tweaks[key];
+exports.handler = function(err, req, res, next) {
+    var realErr = JSON.parse(JSON.stringify(err));
+
+    Object.keys(tweaks).map(function(key) {
+        var tweak = tweaks[key];
 
         if(err.name === key) {
             err.status = tweak.status;
@@ -62,26 +62,21 @@ exports.handler = (err, req, res, next) => {
         }
     });
 
-    const errorStatus = err.status || defaultError.status;
-    const errorCode = err.code || 'unknown_error';
-    const errorMessage = err.message || defaultError.message;
-    const errorList = err.errors;
-
     res.status(errorStatus).json({
-        status: errorStatus,
-        code: errorCode,
-        message: errorMessage,
-        errors: errorList,
-        stack: (process.env.NODE_ENV === 'development') ? realErr : {},
+        status: err.status || defaultError.status,
+        code: err.code || 'unknown_error',
+        message: err.message || defaultError.message,
+        errors: err.errors,
+        stack: process.env.NODE_ENV === 'development' ? realErr : {}
     });
 };
 
-exports.returnErrs = (status, code, message, errors) => {
-    let errMsg = defaultError.message;
-    let errCode = defaultError.code;
-    let statusMatched = false;
+exports.returnErrs = function(status, code, message, errors) {
+    var errMsg = defaultError.message;
+    var errCode = defaultError.code;
+    var statusMatched = false;
 
-    for(const props in e) {
+    for(var props in e) {
         if(e[props].status === status) {
             errCode = e[props].code;
             errMsg = e[props].message;
@@ -93,10 +88,10 @@ exports.returnErrs = (status, code, message, errors) => {
 
     if(!statusMatched) status = defaultError.status;
 
-    const output = {
+    var output = {
         status: status,
         code: code || errCode,
-        message: message || errMsg,
+        message: message || errMsg
     };
 
     if(errors) output.errors = errors;
@@ -104,10 +99,10 @@ exports.returnErrs = (status, code, message, errors) => {
     return output;
 };
 
-exports.formatErrs = errs => {
-    const obj = {};
+exports.formatErrs = function(errs) {
+    var obj = {};
 
-    errs.forEach((err) => {
+    errs.forEach(function(err) {
         obj[err.param] = {
             message: err.msg,
             value: err.value || ''
