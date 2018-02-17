@@ -62,8 +62,10 @@ exports.handler = function(err, req, res, next) {
         }
     });
 
+    var errorStatus = err.status || defaultError.status;
+
     res.status(errorStatus).json({
-        status: err.status || defaultError.status,
+        status: errorStatus,
         code: err.code || 'unknown_error',
         message: err.message || defaultError.message,
         errors: err.errors,
