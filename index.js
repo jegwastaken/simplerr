@@ -1,53 +1,53 @@
-var e = exports.e = {
+var errObject = exports.errObj = {
     badRequest: {
         status: 400,
         code: 'bad_request',
-        message: 'Bad Request'
+        message: 'Bad Request',
     },
     unauthorized: {
         status: 401,
         code: 'unauthorized',
-        message: 'Unauthorized'
+        message: 'Unauthorized',
     },
     forbidden: {
         status: 403,
         code: 'forbidden',
-        message: 'Forbidden'
+        message: 'Forbidden',
     },
     notFound: {
         status: 404,
         code: 'not_found',
-        message: 'Not Found'
+        message: 'Not Found',
     },
     methodNotAllowed: {
         status: 405,
         code: 'method_not_allowed',
-        message: 'Method Not Allowed'
+        message: 'Method Not Allowed',
     },
     conflict: {
         status: 409,
         code: 'conflict',
-        message: 'Conflict'
+        message: 'Conflict',
     },
     internalServer: {
         status: 500,
         code: 'internal_server_error',
-        message: 'Internal Server Error'
+        message: 'Internal Server Error',
     },
     notImplemented: {
         status: 501,
         code: 'not_implemented',
-        message: 'Not Implemented'
-    }
+        message: 'Not Implemented',
+    },
 };
 
 var tweaks = exports.tweaks = {
-    CastError: e.badRequest,
-    AuthenticationError: e.unauthorized,
-    MongoError: e.internalServer
+    CastError: errObject.badRequest,
+    AuthenticationError: errObject.unauthorized,
+    MongoError: errObject.internalServer,
 };
 
-var defaultError = e.internalServer;
+var defaultError = errObject.internalServer;
 
 exports.handler = function(err, req, res, next) {
     var realErr = JSON.parse(JSON.stringify(err));
@@ -69,7 +69,7 @@ exports.handler = function(err, req, res, next) {
         code: err.code || 'unknown_error',
         message: err.message || defaultError.message,
         errors: err.errors,
-        stack: process.env.NODE_ENV === 'development' ? realErr : {}
+        stack: process.env.NODE_ENV === 'development' ? realErr : {},
     });
 };
 
@@ -78,10 +78,10 @@ exports.returnErrs = function(status, code, message, errors) {
     var errCode = defaultError.code;
     var statusMatched = false;
 
-    for(var props in e) {
-        if(e[props].status === status) {
-            errCode = e[props].code;
-            errMsg = e[props].message;
+    for(var props in errObject) {
+        if(errObject[props].status === status) {
+            errCode = errObject[props].code;
+            errMsg = errObject[props].message;
             statusMatched = true;
 
             break;
@@ -93,7 +93,7 @@ exports.returnErrs = function(status, code, message, errors) {
     var output = {
         status: status,
         code: code || errCode,
-        message: message || errMsg
+        message: message || errMsg,
     };
 
     if(errors) output.errors = errors;
@@ -107,7 +107,7 @@ exports.formatErrs = function(errs) {
     errs.forEach(function(err) {
         obj[err.param] = {
             message: err.msg,
-            value: err.value || ''
+            value: err.value || '',
         };
     });
 
