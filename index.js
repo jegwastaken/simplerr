@@ -1,4 +1,4 @@
-var errObject = exports.errObj = {
+var errObj = exports.errObj = {
     badRequest: {
         status: 400,
         code: 'bad_request',
@@ -42,12 +42,12 @@ var errObject = exports.errObj = {
 };
 
 var tweaks = exports.tweaks = {
-    CastError: errObject.badRequest,
-    AuthenticationError: errObject.unauthorized,
-    MongoError: errObject.internalServer,
+    CastError: errObj.badRequest,
+    AuthenticationError: errObj.unauthorized,
+    MongoError: errObj.internalServer,
 };
 
-var defaultError = errObject.internalServer;
+var defaultError = errObj.internalServer;
 
 exports.handler = function(err, req, res, next) {
     var realErr = JSON.parse(JSON.stringify(err));
@@ -78,10 +78,10 @@ exports.returnErrs = function(status, code, message, errors) {
     var errCode = defaultError.code;
     var statusMatched = false;
 
-    for(var props in errObject) {
-        if(errObject[props].status === status) {
-            errCode = errObject[props].code;
-            errMsg = errObject[props].message;
+    for(var props in errObj) {
+        if(errObj[props].status === status) {
+            errCode = errObj[props].code;
+            errMsg = errObj[props].message;
             statusMatched = true;
 
             break;
