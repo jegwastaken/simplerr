@@ -69,7 +69,8 @@ exports.handler = function(err, req, res, next) {
         code: err.code || 'unknown_error',
         message: err.message || defaultError.message,
         errors: err.errors,
-        stack: process.env.NODE_ENV === 'development' ? realErr : {},
+        pureErr: process.env.NODE_ENV === 'development' ? realErr : undefined,
+        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
     });
 };
 
