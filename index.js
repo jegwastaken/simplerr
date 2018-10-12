@@ -1,4 +1,6 @@
-var errObj = exports.errObj = {
+const {validationResult} = require('express-validator/check');
+
+const errObj = exports.errObj = {
     badRequest: {
         status: 400,
         code: 'bad_request',
@@ -41,30 +43,29 @@ var errObj = exports.errObj = {
     },
 };
 
-var tweaks = exports.tweaks = {
+const tweaks = exports.tweaks = {
     CastError: errObj.badRequest,
     AuthenticationError: errObj.unauthorized,
     MongoError: errObj.internalServer,
 };
 
-var defaultError = errObj.internalServer;
+const defaultError = errObj.internalServer;
 
-exports.handler = function(err, req, res, next) {
-    var realErr = JSON.parse(JSON.stringify(err));
+// Remove the next param to watch the whole thing go KABOOM!
+exports.handler = (err, req, res, next) => {
+    const realErr = JSON.parse(JSON.stringify(err));
 
-    Object.keys(tweaks).map(function(key) {
-        var tweak = tweaks[key];
-
+    for(const key in tweaks) {
         if(err.name === key) {
-            err.status = tweak.status;
-            err.code = tweak.code;
-            err.message = tweak.message;
+            err.status = tweaks[key].status;
+            err.code = tweaks[key].code;
+            err.message = tweaks[key].message;
         }
-    });
+    }
 
-    var errorStatus = err.status || defaultError.status;
+    const errorStatus = err.status || defaultError.status;
 
-    res.status(errorStatus).json({
+    return res.status(errorStatus).json({
         status: errorStatus,
         code: err.code || 'unknown_error',
         message: err.message || defaultError.message,
@@ -74,15 +75,15 @@ exports.handler = function(err, req, res, next) {
     });
 };
 
-exports.returnErrs = function(status, code, message, errors) {
-    var errMsg = defaultError.message;
-    var errCode = defaultError.code;
-    var statusMatched = false;
+const joinErrors = exports.joinErrors = (status, code, message, errors) => {
+    let errMsg = defaultError.message;
+    let errCode = defaultError.code;
+    let statusMatched = false;
 
-    for(var props in errObj) {
-        if(errObj[props].status === status) {
-            errCode = errObj[props].code;
-            errMsg = errObj[props].message;
+    for(const key in errObj) {
+        if(errObj[key].status === status) {
+            errCode = errObj[key].code;
+            errMsg = errObj[key].message;
             statusMatched = true;
 
             break;
@@ -91,7 +92,7 @@ exports.returnErrs = function(status, code, message, errors) {
 
     if(!statusMatched) status = defaultError.status;
 
-    var output = {
+    const output = {
         status: status,
         code: code || errCode,
         message: message || errMsg,
@@ -102,15 +103,38 @@ exports.returnErrs = function(status, code, message, errors) {
     return output;
 };
 
-exports.formatErrs = function(errs) {
-    var obj = {};
-
-    errs.forEach(function(err) {
-        obj[err.param] = {
-            message: err.msg,
-            value: err.value || '',
+exports.formatValidationErrs = (errs) => {
+    for(let i = 0; i < errs.length; i++) {
+        errs[i] = {
+            param: errs[i].param,
+            value: errs[i].value,
+            details: errs[i].msg,
         };
-    });
+    }
 
-    return obj;
+    return errs;
+};
+
+const validationErrsFormatter = ({location, msg, param, value, nestedErrors}) => {
+    return {
+        param: param,
+        value: value,
+        details: msg,
+        nested: nestedErrors,
+    };
+};
+
+exports.getValidationErrs = (req) => {
+    const validationErrors = validationResult(req).formatWith(validationErrsFormatter);
+
+    if(!validationErrors.isEmpty()) {
+        return joinErrors(
+            errObj.badRequest.status,
+            'invalid_request',
+            'Validation failed',
+            validationErrors.array(),
+        );
+    } else {
+        return false;
+    }
 };
