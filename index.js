@@ -75,7 +75,7 @@ exports.handler = (err, req, res, next) => {
     });
 };
 
-const joinErrors = exports.joinErrors = (status, code, message, errors) => {
+const joinErrors = exports.joinErrors = ({status, code, message, errors}) => {
     let errMsg = defaultError.message;
     let errCode = defaultError.code;
     let statusMatched = false;
@@ -103,6 +103,15 @@ const joinErrors = exports.joinErrors = (status, code, message, errors) => {
     return output;
 };
 
+const invalidRequest = exports.invalidRequest = ({message, errors}) => {
+    return joinErrors({
+        status: errObj.badRequest.status,
+        code: 'invalid_request',
+        message: message || 'Invalid Request',
+        errors: errors,
+    });
+};
+
 exports.formatValidationErrs = (errs) => {
     for(let i = 0; i < errs.length; i++) {
         errs[i] = {
@@ -128,12 +137,10 @@ exports.getValidationErrs = (req) => {
     const validationErrors = validationResult(req).formatWith(validationErrsFormatter);
 
     if(!validationErrors.isEmpty()) {
-        return joinErrors(
-            errObj.badRequest.status,
-            'invalid_request',
-            'Validation failed',
-            validationErrors.array(),
-        );
+        return invalidRequest({
+            message: 'Validation Failed',
+            errors: validationErrors.array(),
+        });
     } else {
         return false;
     }
