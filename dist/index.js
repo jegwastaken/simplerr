@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const check_1 = require("express-validator/check");
-exports.errObj = {
+exports.errObjs = {
     badRequest: {
         status: 400,
         code: "bad_request",
@@ -44,11 +44,11 @@ exports.errObj = {
     },
 };
 const tweaks = {
-    CastError: exports.errObj.badRequest,
-    AuthenticationError: exports.errObj.unauthorized,
-    MongoError: exports.errObj.internalServer,
+    CastError: exports.errObjs.badRequest,
+    AuthenticationError: exports.errObjs.unauthorized,
+    MongoError: exports.errObjs.internalServer,
 };
-const defaultError = exports.errObj.internalServer;
+const defaultError = exports.errObjs.internalServer;
 // Remove the next param to watch the whole thing go KABOOM!
 function handler(err, req, res, next) {
     const realErr = JSON.parse(JSON.stringify(err));
@@ -74,10 +74,11 @@ function joinErrors({ status, code, message, errors }) {
     let errMsg = defaultError.message;
     let errCode = defaultError.code;
     let statusMatched = false;
-    for (const key in exports.errObj) {
-        if (exports.errObj[key].status === status) {
-            errCode = exports.errObj[key].code;
-            errMsg = exports.errObj[key].message;
+    for (let key in exports.errObjs) {
+        let errObj = exports.errObjs[key];
+        if (errObj.status === status) {
+            errCode = errObj.code;
+            errMsg = errObj.message;
             statusMatched = true;
             break;
         }
@@ -94,7 +95,7 @@ function joinErrors({ status, code, message, errors }) {
 exports.joinErrors = joinErrors;
 function invalidRequest({ message, errors }) {
     return joinErrors({
-        status: exports.errObj.badRequest.status,
+        status: exports.errObjs.badRequest.status,
         code: "invalid_request",
         message: message || "Invalid Request",
         errors: errors,

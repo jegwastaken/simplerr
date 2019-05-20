@@ -1,64 +1,62 @@
 import { validationResult } from "express-validator/check";
 import { Request, Response, NextFunction } from "express";
 
-declare type ErrObj = {
-    [propName: string]: {
-        status: number;
-        code: string;
-        message: string;
-    };
-};
+export interface ErrObj {
+    readonly status: number;
+    readonly code: string;
+    readonly message: string;
+}
 
-export const errObj: ErrObj = {
-    badRequest: {
+export const errObjs = {
+    badRequest: <ErrObj>{
         status: 400,
         code: "bad_request",
         message: "Bad Request",
     },
-    unauthorized: {
+    unauthorized: <ErrObj>{
         status: 401,
         code: "unauthorized",
         message: "Unauthorized",
     },
-    forbidden: {
+    forbidden: <ErrObj>{
         status: 403,
         code: "forbidden",
         message: "Forbidden",
     },
-    notFound: {
+    notFound: <ErrObj>{
         status: 404,
         code: "not_found",
         message: "Not Found",
     },
-    methodNotAllowed: {
+    methodNotAllowed: <ErrObj>{
         status: 405,
         code: "method_not_allowed",
         message: "Method Not Allowed",
     },
-    conflict: {
+    conflict: <ErrObj>{
         status: 409,
         code: "conflict",
         message: "Conflict",
     },
-    internalServer: {
+    internalServer: <ErrObj>{
         status: 500,
         code: "internal_server_error",
         message: "Internal Server Error",
     },
-    notImplemented: {
+    notImplemented: <ErrObj>{
         status: 501,
         code: "not_implemented",
         message: "Not Implemented",
     },
 };
 
-const tweaks: ErrObj = {
-    CastError: errObj.badRequest,
-    AuthenticationError: errObj.unauthorized,
-    MongoError: errObj.internalServer,
+const tweaks: any = {
+    CastError: errObjs.badRequest,
+    AuthenticationError: errObjs.unauthorized,
+    MongoError: errObjs.internalServer,
 };
 
-const defaultError = errObj.internalServer;
+const defaultError = errObjs.internalServer;
 
 // Remove the next param to watch the whole thing go KABOOM!
 export function handler(
@@ -94,10 +92,12 @@ export function joinErrors({ status, code, message, errors }: any) {
     let errCode = defaultError.code;
     let statusMatched = false;
 
-    for (const key in errObj) {
-        if (errObj[key].status === status) {
-            errCode = errObj[key].code;
-            errMsg = errObj[key].message;
+    for (let key in errObjs) {
+        let errObj: ErrObj = (<any>errObjs)[key];
+
+        if (errObj.status === status) {
+            errCode = errObj.code;
+            errMsg = errObj.message;
             statusMatched = true;
 
             break;
@@ -116,7 +116,7 @@ export function joinErrors({ status, code, message, errors }: any) {
 
 export function invalidRequest({ message, errors }: any) {
     return joinErrors({
-        status: errObj.badRequest.status,
+        status: errObjs.badRequest.status,
         code: "invalid_request",
         message: message || "Invalid Request",
         errors: errors,

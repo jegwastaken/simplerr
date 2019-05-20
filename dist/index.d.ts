@@ -1,12 +1,19 @@
 import { Request, Response, NextFunction } from "express";
-declare type ErrObj = {
-    [propName: string]: {
-        status: number;
-        code: string;
-        message: string;
-    };
+export interface ErrObj {
+    readonly status: number;
+    readonly code: string;
+    readonly message: string;
+}
+export declare const errObjs: {
+    badRequest: ErrObj;
+    unauthorized: ErrObj;
+    forbidden: ErrObj;
+    notFound: ErrObj;
+    methodNotAllowed: ErrObj;
+    conflict: ErrObj;
+    internalServer: ErrObj;
+    notImplemented: ErrObj;
 };
-export declare const errObj: ErrObj;
 export declare function handler(err: any, req: Request, res: Response, next: NextFunction): import("express-serve-static-core").Response;
 export declare function joinErrors({ status, code, message, errors }: any): {
     status: any;
@@ -27,4 +34,3 @@ export declare function getValidationErrs(req: Request): false | {
     message: any;
     errors: any;
 };
-export {};
