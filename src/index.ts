@@ -143,8 +143,8 @@ const validationErrsFormatter = ({
     nestedErrors,
 }: any) => {
     return {
-        param: param,
-        value: value,
+        param,
+        value,
         details: msg,
         nested: nestedErrors,
     };
