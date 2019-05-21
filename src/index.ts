@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from "express";
 
 export interface ErrObj {
     readonly status: number;
+    readonly name: string;
     readonly code: string;
     readonly message: string;
 }
@@ -10,41 +11,49 @@ export interface ErrObj {
 export const errObjs = {
     badRequest: <ErrObj>{
         status: 400,
+        name: "BadRequest",
         code: "bad_request",
         message: "Bad Request",
     },
     unauthorized: <ErrObj>{
         status: 401,
+        name: "Unauthorized",
         code: "unauthorized",
         message: "Unauthorized",
     },
     forbidden: <ErrObj>{
         status: 403,
+        name: "Forbidden",
         code: "forbidden",
         message: "Forbidden",
     },
     notFound: <ErrObj>{
         status: 404,
+        name: "NotFound",
         code: "not_found",
         message: "Not Found",
     },
     methodNotAllowed: <ErrObj>{
         status: 405,
+        name: "MethodNotAllowed",
         code: "method_not_allowed",
         message: "Method Not Allowed",
     },
     conflict: <ErrObj>{
         status: 409,
+        name: "Conflict",
         code: "conflict",
         message: "Conflict",
     },
     internalServer: <ErrObj>{
         status: 500,
+        name: "InternalServerError",
         code: "internal_server_error",
         message: "Internal Server Error",
     },
     notImplemented: <ErrObj>{
         status: 501,
+        name: "NotImplemented",
         code: "not_implemented",
         message: "Not Implemented",
     },
@@ -70,6 +79,7 @@ export function handler(
     for (const key in tweaks) {
         if (err.name === key) {
             err.status = tweaks[key].status;
+            err.name = tweaks[key].name;
             err.code = tweaks[key].code;
             err.message = tweaks[key].message;
         }
@@ -79,17 +89,18 @@ export function handler(
 
     return res.status(errorStatus).json({
         status: errorStatus,
+        name: err.name,
         code: err.code || "unknown_error",
         message: err.message || defaultError.message,
         errors: err.errors,
-        pureErr: process.env.NODE_ENV === "development" ? realErr : undefined,
+        pure: process.env.NODE_ENV === "development" ? realErr : undefined,
         stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
     });
 }
 
-export function joinErrors({ status, code, message, errors }: any) {
-    let errMsg = defaultError.message;
+export function joinErrors({ status, name, code, message, errors }: any) {
     let errCode = defaultError.code;
+    let errMessage = defaultError.message;
     let statusMatched = false;
 
     for (let key in errObjs) {
@@ -97,7 +108,7 @@ export function joinErrors({ status, code, message, errors }: any) {
 
         if (errObj.status === status) {
             errCode = errObj.code;
-            errMsg = errObj.message;
+            errMessage = errObj.message;
             statusMatched = true;
 
             break;
@@ -108,8 +119,9 @@ export function joinErrors({ status, code, message, errors }: any) {
 
     return {
         status,
+        name,
         code: code || errCode,
-        message: message || errMsg,
+        message: message || errMessage,
         errors,
     };
 }
@@ -117,6 +129,7 @@ export function joinErrors({ status, code, message, errors }: any) {
 export function invalidRequest({ message, errors }: any) {
     return joinErrors({
         status: errObjs.badRequest.status,
+        name: "InvalidRequest",
         code: "invalid_request",
         message: message || "Invalid Request",
         errors: errors,

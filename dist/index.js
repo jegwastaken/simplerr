@@ -4,41 +4,49 @@ const check_1 = require("express-validator/check");
 exports.errObjs = {
     badRequest: {
         status: 400,
+        name: "BadRequest",
         code: "bad_request",
         message: "Bad Request",
     },
     unauthorized: {
         status: 401,
+        name: "Unauthorized",
         code: "unauthorized",
         message: "Unauthorized",
     },
     forbidden: {
         status: 403,
+        name: "Forbidden",
         code: "forbidden",
         message: "Forbidden",
     },
     notFound: {
         status: 404,
+        name: "NotFound",
         code: "not_found",
         message: "Not Found",
     },
     methodNotAllowed: {
         status: 405,
+        name: "MethodNotAllowed",
         code: "method_not_allowed",
         message: "Method Not Allowed",
     },
     conflict: {
         status: 409,
+        name: "Conflict",
         code: "conflict",
         message: "Conflict",
     },
     internalServer: {
         status: 500,
+        name: "InternalServerError",
         code: "internal_server_error",
         message: "Internal Server Error",
     },
     notImplemented: {
         status: 501,
+        name: "NotImplemented",
         code: "not_implemented",
         message: "Not Implemented",
     },
@@ -55,6 +63,7 @@ function handler(err, req, res, next) {
     for (const key in tweaks) {
         if (err.name === key) {
             err.status = tweaks[key].status;
+            err.name = tweaks[key].name;
             err.code = tweaks[key].code;
             err.message = tweaks[key].message;
         }
@@ -62,23 +71,24 @@ function handler(err, req, res, next) {
     const errorStatus = err.status || defaultError.status;
     return res.status(errorStatus).json({
         status: errorStatus,
+        name: err.name,
         code: err.code || "unknown_error",
         message: err.message || defaultError.message,
         errors: err.errors,
-        pureErr: process.env.NODE_ENV === "development" ? realErr : undefined,
+        pure: process.env.NODE_ENV === "development" ? realErr : undefined,
         stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
     });
 }
 exports.handler = handler;
-function joinErrors({ status, code, message, errors }) {
-    let errMsg = defaultError.message;
+function joinErrors({ status, name, code, message, errors }) {
     let errCode = defaultError.code;
+    let errMessage = defaultError.message;
     let statusMatched = false;
     for (let key in exports.errObjs) {
         let errObj = exports.errObjs[key];
         if (errObj.status === status) {
             errCode = errObj.code;
-            errMsg = errObj.message;
+            errMessage = errObj.message;
             statusMatched = true;
             break;
         }
@@ -87,8 +97,9 @@ function joinErrors({ status, code, message, errors }) {
         status = defaultError.status;
     return {
         status,
+        name,
         code: code || errCode,
-        message: message || errMsg,
+        message: message || errMessage,
         errors,
     };
 }
@@ -96,6 +107,7 @@ exports.joinErrors = joinErrors;
 function invalidRequest({ message, errors }) {
     return joinErrors({
         status: exports.errObjs.badRequest.status,
+        name: "InvalidRequest",
         code: "invalid_request",
         message: message || "Invalid Request",
         errors: errors,
