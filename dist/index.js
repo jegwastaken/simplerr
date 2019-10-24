@@ -4,51 +4,51 @@ const check_1 = require("express-validator/check");
 exports.errObjs = {
     badRequest: {
         status: 400,
-        name: "BadRequest",
-        code: "bad_request",
-        message: "Bad Request",
+        name: 'BadRequest',
+        code: 'bad_request',
+        message: 'Bad Request',
     },
     unauthorized: {
         status: 401,
-        name: "Unauthorized",
-        code: "unauthorized",
-        message: "Unauthorized",
+        name: 'Unauthorized',
+        code: 'unauthorized',
+        message: 'Unauthorized',
     },
     forbidden: {
         status: 403,
-        name: "Forbidden",
-        code: "forbidden",
-        message: "Forbidden",
+        name: 'Forbidden',
+        code: 'forbidden',
+        message: 'Forbidden',
     },
     notFound: {
         status: 404,
-        name: "NotFound",
-        code: "not_found",
-        message: "Not Found",
+        name: 'NotFound',
+        code: 'not_found',
+        message: 'Not Found',
     },
     methodNotAllowed: {
         status: 405,
-        name: "MethodNotAllowed",
-        code: "method_not_allowed",
-        message: "Method Not Allowed",
+        name: 'MethodNotAllowed',
+        code: 'method_not_allowed',
+        message: 'Method Not Allowed',
     },
     conflict: {
         status: 409,
-        name: "Conflict",
-        code: "conflict",
-        message: "Conflict",
+        name: 'Conflict',
+        code: 'conflict',
+        message: 'Conflict',
     },
     internalServer: {
         status: 500,
-        name: "InternalServerError",
-        code: "internal_server_error",
-        message: "Internal Server Error",
+        name: 'InternalServerError',
+        code: 'internal_server_error',
+        message: 'Internal Server Error',
     },
     notImplemented: {
         status: 501,
-        name: "NotImplemented",
-        code: "not_implemented",
-        message: "Not Implemented",
+        name: 'NotImplemented',
+        code: 'not_implemented',
+        message: 'Not Implemented',
     },
 };
 const tweaks = {
@@ -72,11 +72,11 @@ function handler(err, req, res, next) {
     return res.status(errorStatus).json({
         status: errorStatus,
         name: err.name,
-        code: err.code || "unknown_error",
+        code: err.code || 'unknown_error',
         message: err.message || defaultError.message,
         errors: err.errors,
-        pure: process.env.NODE_ENV === "development" ? realErr : undefined,
-        stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
+        pure: process.env.NODE_ENV === 'development' ? realErr : undefined,
+        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
     });
 }
 exports.handler = handler;
@@ -107,9 +107,9 @@ exports.joinErrors = joinErrors;
 function invalidRequest({ message, errors }) {
     return joinErrors({
         status: exports.errObjs.badRequest.status,
-        name: "InvalidRequest",
-        code: "invalid_request",
-        message: message || "Invalid Request",
+        name: 'InvalidRequest',
+        code: 'invalid_request',
+        message: message || 'Invalid Request',
         errors: errors,
     });
 }
@@ -137,7 +137,7 @@ function getValidationErrs(req) {
     const validationErrors = check_1.validationResult(req).formatWith(validationErrsFormatter);
     if (!validationErrors.isEmpty()) {
         return invalidRequest({
-            message: "Validation Failed",
+            message: 'Validation Failed',
             errors: validationErrors.array(),
         });
     }

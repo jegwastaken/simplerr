@@ -1,5 +1,5 @@
-import { validationResult } from "express-validator/check";
-import { Request, Response, NextFunction } from "express";
+import { validationResult } from 'express-validator/check';
+import { Request, Response, NextFunction } from 'express';
 
 export interface ErrObj {
     readonly status: number;
@@ -11,51 +11,51 @@ export interface ErrObj {
 export const errObjs = {
     badRequest: <ErrObj>{
         status: 400,
-        name: "BadRequest",
-        code: "bad_request",
-        message: "Bad Request",
+        name: 'BadRequest',
+        code: 'bad_request',
+        message: 'Bad Request',
     },
     unauthorized: <ErrObj>{
         status: 401,
-        name: "Unauthorized",
-        code: "unauthorized",
-        message: "Unauthorized",
+        name: 'Unauthorized',
+        code: 'unauthorized',
+        message: 'Unauthorized',
     },
     forbidden: <ErrObj>{
         status: 403,
-        name: "Forbidden",
-        code: "forbidden",
-        message: "Forbidden",
+        name: 'Forbidden',
+        code: 'forbidden',
+        message: 'Forbidden',
     },
     notFound: <ErrObj>{
         status: 404,
-        name: "NotFound",
-        code: "not_found",
-        message: "Not Found",
+        name: 'NotFound',
+        code: 'not_found',
+        message: 'Not Found',
     },
     methodNotAllowed: <ErrObj>{
         status: 405,
-        name: "MethodNotAllowed",
-        code: "method_not_allowed",
-        message: "Method Not Allowed",
+        name: 'MethodNotAllowed',
+        code: 'method_not_allowed',
+        message: 'Method Not Allowed',
     },
     conflict: <ErrObj>{
         status: 409,
-        name: "Conflict",
-        code: "conflict",
-        message: "Conflict",
+        name: 'Conflict',
+        code: 'conflict',
+        message: 'Conflict',
     },
     internalServer: <ErrObj>{
         status: 500,
-        name: "InternalServerError",
-        code: "internal_server_error",
-        message: "Internal Server Error",
+        name: 'InternalServerError',
+        code: 'internal_server_error',
+        message: 'Internal Server Error',
     },
     notImplemented: <ErrObj>{
         status: 501,
-        name: "NotImplemented",
-        code: "not_implemented",
-        message: "Not Implemented",
+        name: 'NotImplemented',
+        code: 'not_implemented',
+        message: 'Not Implemented',
     },
 };
 
@@ -72,12 +72,12 @@ export function handler(
     err: any,
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
 ) {
     const realErr = JSON.parse(JSON.stringify(err));
 
-    for (const key in tweaks) {
-        if (err.name === key) {
+    for(const key in tweaks) {
+        if(err.name === key) {
             err.status = tweaks[key].status;
             err.name = tweaks[key].name;
             err.code = tweaks[key].code;
@@ -90,23 +90,23 @@ export function handler(
     return res.status(errorStatus).json({
         status: errorStatus,
         name: err.name,
-        code: err.code || "unknown_error",
+        code: err.code || 'unknown_error',
         message: err.message || defaultError.message,
         errors: err.errors,
-        pure: process.env.NODE_ENV === "development" ? realErr : undefined,
-        stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
+        pure: process.env.NODE_ENV === 'development' ? realErr : undefined,
+        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
     });
 }
 
-export function joinErrors({ status, name, code, message, errors }: any) {
+export function joinErrors({status, name, code, message, errors}: any) {
     let errCode = defaultError.code;
     let errMessage = defaultError.message;
     let statusMatched = false;
 
-    for (let key in errObjs) {
+    for(let key in errObjs) {
         let errObj: ErrObj = (<any>errObjs)[key];
 
-        if (errObj.status === status) {
+        if(errObj.status === status) {
             errCode = errObj.code;
             errMessage = errObj.message;
             statusMatched = true;
@@ -115,7 +115,7 @@ export function joinErrors({ status, name, code, message, errors }: any) {
         }
     }
 
-    if (!statusMatched) status = defaultError.status;
+    if(!statusMatched) status = defaultError.status;
 
     return {
         status,
@@ -126,18 +126,18 @@ export function joinErrors({ status, name, code, message, errors }: any) {
     };
 }
 
-export function invalidRequest({ message, errors }: any) {
+export function invalidRequest({message, errors}: any) {
     return joinErrors({
         status: errObjs.badRequest.status,
-        name: "InvalidRequest",
-        code: "invalid_request",
-        message: message || "Invalid Request",
+        name: 'InvalidRequest',
+        code: 'invalid_request',
+        message: message || 'Invalid Request',
         errors: errors,
     });
 }
 
 export function formatValidationErrs(errs: any) {
-    for (let i = 0; i < errs.length; i++) {
+    for(let i = 0; i < errs.length; i++) {
         errs[i] = {
             param: errs[i].param,
             value: errs[i].value,
@@ -165,12 +165,12 @@ const validationErrsFormatter = ({
 
 export function getValidationErrs(req: Request) {
     const validationErrors = validationResult(req).formatWith(
-        validationErrsFormatter
+        validationErrsFormatter,
     );
 
-    if (!validationErrors.isEmpty()) {
+    if(!validationErrors.isEmpty()) {
         return invalidRequest({
-            message: "Validation Failed",
+            message: 'Validation Failed',
             errors: validationErrors.array(),
         });
     } else {
