@@ -59,24 +59,24 @@ const tweaks = {
 const defaultError = exports.errObjs.internalServer;
 // Remove the next param to watch the whole thing go KABOOM!
 function handler(err, req, res, next) {
-    const realErr = JSON.parse(JSON.stringify(err));
+    const newErr = JSON.parse(JSON.stringify(err));
     for (const key in tweaks) {
-        if (err.name === key) {
-            err.status = tweaks[key].status;
-            err.name = tweaks[key].name;
-            err.code = tweaks[key].code;
-            err.message = tweaks[key].message;
+        if (newErr.name === key) {
+            newErr.status = tweaks[key].status;
+            newErr.name = tweaks[key].name;
+            newErr.code = tweaks[key].code;
+            newErr.message = tweaks[key].message;
         }
     }
-    const errorStatus = err.status || defaultError.status;
+    const errorStatus = newErr.status || defaultError.status;
     return res.status(errorStatus).json({
         status: errorStatus,
-        name: err.name,
-        code: err.code || 'unknown_error',
-        message: err.message || defaultError.message,
-        errors: err.errors,
-        pure: process.env.NODE_ENV === 'development' ? realErr : undefined,
-        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+        name: newErr.name,
+        code: newErr.code || 'unknown_error',
+        message: newErr.message || defaultError.message,
+        errors: newErr.errors,
+        pure: process.env.NODE_ENV === 'development' ? err : undefined,
+        stack: process.env.NODE_ENV === 'development' ? newErr.stack : undefined,
     });
 }
 exports.handler = handler;
@@ -125,7 +125,7 @@ function formatValidationErrs(errs) {
     return errs;
 }
 exports.formatValidationErrs = formatValidationErrs;
-const validationErrsFormatter = ({ location, msg, param, value, nestedErrors, }) => {
+const validationErrsFormatter = ({ location, msg, param, value, nestedErrors }) => {
     return {
         param,
         value,

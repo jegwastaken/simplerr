@@ -1,5 +1,5 @@
-import { validationResult } from 'express-validator/check';
-import { Request, Response, NextFunction } from 'express';
+import {validationResult} from 'express-validator/check';
+import {Request, Response, NextFunction} from 'express';
 
 export interface ErrObj {
     readonly status: number;
@@ -68,33 +68,28 @@ const tweaks: any = {
 const defaultError = errObjs.internalServer;
 
 // Remove the next param to watch the whole thing go KABOOM!
-export function handler(
-    err: any,
-    req: Request,
-    res: Response,
-    next: NextFunction,
-) {
-    const realErr = JSON.parse(JSON.stringify(err));
+export function handler(err: any, req: Request, res: Response, next: NextFunction) {
+    const newErr = JSON.parse(JSON.stringify(err));
 
-    for(const key in tweaks) {
-        if(err.name === key) {
-            err.status = tweaks[key].status;
-            err.name = tweaks[key].name;
-            err.code = tweaks[key].code;
-            err.message = tweaks[key].message;
+    for (const key in tweaks) {
+        if (newErr.name === key) {
+            newErr.status = tweaks[key].status;
+            newErr.name = tweaks[key].name;
+            newErr.code = tweaks[key].code;
+            newErr.message = tweaks[key].message;
         }
     }
 
-    const errorStatus: number = err.status || defaultError.status;
+    const errorStatus: number = newErr.status || defaultError.status;
 
     return res.status(errorStatus).json({
         status: errorStatus,
-        name: err.name,
-        code: err.code || 'unknown_error',
-        message: err.message || defaultError.message,
-        errors: err.errors,
-        pure: process.env.NODE_ENV === 'development' ? realErr : undefined,
-        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+        name: newErr.name,
+        code: newErr.code || 'unknown_error',
+        message: newErr.message || defaultError.message,
+        errors: newErr.errors,
+        pure: process.env.NODE_ENV === 'development' ? err : undefined,
+        stack: process.env.NODE_ENV === 'development' ? newErr.stack : undefined,
     });
 }
 
@@ -103,10 +98,10 @@ export function joinErrors({status, name, code, message, errors}: any) {
     let errMessage = defaultError.message;
     let statusMatched = false;
 
-    for(let key in errObjs) {
+    for (let key in errObjs) {
         let errObj: ErrObj = (<any>errObjs)[key];
 
-        if(errObj.status === status) {
+        if (errObj.status === status) {
             errCode = errObj.code;
             errMessage = errObj.message;
             statusMatched = true;
@@ -115,7 +110,7 @@ export function joinErrors({status, name, code, message, errors}: any) {
         }
     }
 
-    if(!statusMatched) status = defaultError.status;
+    if (!statusMatched) status = defaultError.status;
 
     return {
         status,
@@ -137,7 +132,7 @@ export function invalidRequest({message, errors}: any) {
 }
 
 export function formatValidationErrs(errs: any) {
-    for(let i = 0; i < errs.length; i++) {
+    for (let i = 0; i < errs.length; i++) {
         errs[i] = {
             param: errs[i].param,
             value: errs[i].value,
@@ -148,13 +143,7 @@ export function formatValidationErrs(errs: any) {
     return errs;
 }
 
-const validationErrsFormatter = ({
-    location,
-    msg,
-    param,
-    value,
-    nestedErrors,
-}: any) => {
+const validationErrsFormatter = ({location, msg, param, value, nestedErrors}: any) => {
     return {
         param,
         value,
@@ -164,11 +153,9 @@ const validationErrsFormatter = ({
 };
 
 export function getValidationErrs(req: Request) {
-    const validationErrors = validationResult(req).formatWith(
-        validationErrsFormatter,
-    );
+    const validationErrors = validationResult(req).formatWith(validationErrsFormatter);
 
-    if(!validationErrors.isEmpty()) {
+    if (!validationErrors.isEmpty()) {
         return invalidRequest({
             message: 'Validation Failed',
             errors: validationErrors.array(),
