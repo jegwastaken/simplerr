@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const check_1 = require("express-validator/check");
+const express_validator_1 = require("express-validator");
 exports.errObjs = {
     badRequest: {
         status: 400,
@@ -134,7 +134,7 @@ const validationErrsFormatter = ({ location, msg, param, value, nestedErrors }) 
     };
 };
 function getValidationErrs(req) {
-    const validationErrors = check_1.validationResult(req).formatWith(validationErrsFormatter);
+    const validationErrors = express_validator_1.validationResult(req).formatWith(validationErrsFormatter);
     if (!validationErrors.isEmpty()) {
         return invalidRequest({
             message: 'Validation Failed',
@@ -146,4 +146,3 @@ function getValidationErrs(req) {
     }
 }
 exports.getValidationErrs = getValidationErrs;
-//# sourceMappingURL=index.js.map

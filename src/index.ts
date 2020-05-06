@@ -1,4 +1,4 @@
-import {validationResult} from 'express-validator/check';
+import {validationResult} from 'express-validator';
 import {Request, Response, NextFunction} from 'express';
 
 export interface ErrObj {
@@ -8,50 +8,50 @@ export interface ErrObj {
     readonly message: string;
 }
 
-export const errObjs = {
-    badRequest: <ErrObj>{
+export const errObjs: {[property: string]: ErrObj} = {
+    badRequest: {
         status: 400,
         name: 'BadRequest',
         code: 'bad_request',
         message: 'Bad Request',
     },
-    unauthorized: <ErrObj>{
+    unauthorized: {
         status: 401,
         name: 'Unauthorized',
         code: 'unauthorized',
         message: 'Unauthorized',
     },
-    forbidden: <ErrObj>{
+    forbidden: {
         status: 403,
         name: 'Forbidden',
         code: 'forbidden',
         message: 'Forbidden',
     },
-    notFound: <ErrObj>{
+    notFound: {
         status: 404,
         name: 'NotFound',
         code: 'not_found',
         message: 'Not Found',
     },
-    methodNotAllowed: <ErrObj>{
+    methodNotAllowed: {
         status: 405,
         name: 'MethodNotAllowed',
         code: 'method_not_allowed',
         message: 'Method Not Allowed',
     },
-    conflict: <ErrObj>{
+    conflict: {
         status: 409,
         name: 'Conflict',
         code: 'conflict',
         message: 'Conflict',
     },
-    internalServer: <ErrObj>{
+    internalServer: {
         status: 500,
         name: 'InternalServerError',
         code: 'internal_server_error',
         message: 'Internal Server Error',
     },
-    notImplemented: <ErrObj>{
+    notImplemented: {
         status: 501,
         name: 'NotImplemented',
         code: 'not_implemented',
@@ -99,7 +99,7 @@ export function joinErrors({status, name, code, message, errors}: any) {
     let statusMatched = false;
 
     for (let key in errObjs) {
-        let errObj: ErrObj = (<any>errObjs)[key];
+        let errObj: ErrObj = errObjs[key];
 
         if (errObj.status === status) {
             errCode = errObj.code;
