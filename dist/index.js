@@ -119,7 +119,7 @@ function formatValidationErrs(errs) {
         errs[i] = {
             param: errs[i].param,
             value: errs[i].value,
-            details: errs[i].msg,
+            message: errs[i].msg,
         };
     }
     return errs;
@@ -129,7 +129,7 @@ const validationErrsFormatter = ({ msg, param, value, }) => {
     return {
         param,
         value,
-        details: msg,
+        message: msg,
     };
 };
 function getValidationErrs(req) {

@@ -149,7 +149,7 @@ export function formatValidationErrs(errs: any) {
         errs[i] = {
             param: errs[i].param,
             value: errs[i].value,
-            details: errs[i].msg,
+            message: errs[i].msg,
         };
     }
 
@@ -164,7 +164,7 @@ const validationErrsFormatter: ErrorFormatter = ({
     return {
         param,
         value,
-        details: msg,
+        message: msg,
     };
 };
 
