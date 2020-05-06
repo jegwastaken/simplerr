@@ -125,12 +125,11 @@ function formatValidationErrs(errs) {
     return errs;
 }
 exports.formatValidationErrs = formatValidationErrs;
-const validationErrsFormatter = ({ location, msg, param, value, nestedErrors }) => {
+const validationErrsFormatter = ({ msg, param, value, }) => {
     return {
         param,
         value,
         details: msg,
-        nested: nestedErrors,
     };
 };
 function getValidationErrs(req) {

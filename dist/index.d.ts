@@ -5,9 +5,10 @@ export interface ErrObj {
     readonly code: string;
     readonly message: string;
 }
-export declare const errObjs: {
+declare type ErrObjsType = {
     [property: string]: ErrObj;
 };
+export declare const errObjs: ErrObjsType;
 export declare function handler(err: any, req: Request, res: Response, next: NextFunction): Response<any>;
 export declare function joinErrors({ status, name, code, message, errors }: any): {
     status: any;
@@ -31,3 +32,4 @@ export declare function getValidationErrs(req: Request): false | {
     message: any;
     errors: any;
 };
+export {};

@@ -1,4 +1,9 @@
-import {validationResult} from 'express-validator';
+import {
+    validationResult,
+    ValidationError,
+    ErrorFormatter,
+} from 'express-validator';
+
 import {Request, Response, NextFunction} from 'express';
 
 export interface ErrObj {
@@ -8,7 +13,9 @@ export interface ErrObj {
     readonly message: string;
 }
 
-export const errObjs: {[property: string]: ErrObj} = {
+type ErrObjsType = {[property: string]: ErrObj};
+
+export const errObjs: ErrObjsType = {
     badRequest: {
         status: 400,
         name: 'BadRequest',
@@ -59,7 +66,7 @@ export const errObjs: {[property: string]: ErrObj} = {
     },
 };
 
-const tweaks: any = {
+const tweaks: ErrObjsType = {
     CastError: errObjs.badRequest,
     AuthenticationError: errObjs.unauthorized,
     MongoError: errObjs.internalServer,
@@ -68,7 +75,12 @@ const tweaks: any = {
 const defaultError = errObjs.internalServer;
 
 // Remove the next param to watch the whole thing go KABOOM!
-export function handler(err: any, req: Request, res: Response, next: NextFunction) {
+export function handler(
+    err: any,
+    req: Request,
+    res: Response,
+    next: NextFunction
+) {
     const newErr = JSON.parse(JSON.stringify(err));
 
     for (const key in tweaks) {
@@ -89,7 +101,8 @@ export function handler(err: any, req: Request, res: Response, next: NextFunctio
         message: newErr.message || defaultError.message,
         errors: newErr.errors,
         pure: process.env.NODE_ENV === 'development' ? err : undefined,
-        stack: process.env.NODE_ENV === 'development' ? newErr.stack : undefined,
+        stack:
+            process.env.NODE_ENV === 'development' ? newErr.stack : undefined,
     });
 }
 
@@ -143,17 +156,22 @@ export function formatValidationErrs(errs: any) {
     return errs;
 }
 
-const validationErrsFormatter = ({location, msg, param, value, nestedErrors}: any) => {
+const validationErrsFormatter: ErrorFormatter = ({
+    msg,
+    param,
+    value,
+}: ValidationError) => {
     return {
         param,
         value,
         details: msg,
-        nested: nestedErrors,
     };
 };
 
 export function getValidationErrs(req: Request) {
-    const validationErrors = validationResult(req).formatWith(validationErrsFormatter);
+    const validationErrors = validationResult(req).formatWith(
+        validationErrsFormatter
+    );
 
     if (!validationErrors.isEmpty()) {
         return invalidRequest({
